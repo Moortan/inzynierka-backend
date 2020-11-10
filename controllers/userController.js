@@ -7,7 +7,9 @@ const { roles } = require('../config/roles');
 const cookieParser = require('cookie-parser');
 const moment = require('moment');
 const randtoken = require('rand-token');
+const validate = require('../middlewares/validator')
 const ms = require('ms');
+var sanitize = require('mongo-sanitize');
 const dev = process.env.NODE_ENV !== 'production';
 
 
@@ -43,7 +45,6 @@ exports.generateToken = async (user) => {
             userId: user._Id,
             email: user.email,
             username: user.username,
-            //password: user.password,
             role: user.role
         };
 
@@ -78,16 +79,23 @@ exports.generateRefreshToken = async (userId) => {
 exports.signup = async (req, res, next) => {
     try {
         let newUser;
-        const { email, username, password, role } = req.body;
+        const { email, username, password, role } = sanitize(req.body);
 
-        User.findOne({ email: email }, async (err, user) => {
+        if(!validate.isAlphaNumericOnly(username) && validate.isLongEnough(username)) {
+            return res.status(400).json({message: "only alphanumeric username"})}
+        if(!validate.isValidEmail(email)) {
+            return res.status(400).json({message: "invalid email"}) }
+        if(!validate.isGoodPassword(password, username)) {
+            return res.status(400).json({message: "password must contain at least 12 characters, one lowercase, one uppercase and one digit and can not contain username"})}
+        
+        User.findOne({ email: email.toString(10) }, async (err, user) => {
             if (user) return res.status(400).json({ auth: false, message: "email already exits" });
 
-            User.findOne({ username: username }, async (err, user) => {
+            User.findOne({ username: username.toString(10) }, async (err, user) => {
                 if (user) return res.status(400).json({ auth: false, message: "username already exits" });
 
-                const hashedPassword = await hashPassword(password);
-                newUser = new User({ email, username, password: hashedPassword, role: role || "basic" });
+                const hashedPassword = await hashPassword(password.toString(10));
+                newUser = new User({ email: email.toString(10), username: username.toString(10), password: hashedPassword, role: role || "basic" });
 
                 await newUser.save();
                 res.json({
@@ -103,10 +111,10 @@ exports.signup = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try {
 
-        const { email, password } = req.body;
-        const user = await User.findOne({ $or: [{ email: email }, { username: email }] });
+        const { email, password } = sanitize(req.body);
+        const user = await User.findOne({ $or: [{ email: email.toString(10) }, { username: email.toString(10) }] });
 
-        if (!user || !await validatePassword(password, user.password)) {
+        if (!user || !await validatePassword(password.toString(10), user.password)) {
             res.status(401).send('Wrong email or password');
             return (next())
         };
@@ -227,8 +235,6 @@ exports.allowIfLoggedin = async (req, res, next) => {
 
             const { signedCookies = {} } = req;
             const { refreshToken } = signedCookies;
-
-            console.log(refreshTokens);
 
             if (!refreshToken || !(refreshToken in refreshTokens) || refreshTokens[refreshToken] !== xsrfToken) {
                 return await exports.handleResponse(req, res, 401);

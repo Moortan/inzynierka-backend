@@ -6,12 +6,12 @@ const teamSchema = new Schema({
     teamLeader: {
         type: String,
         required: true,
-        maxlength: 100
+        maxlength: 32
     },
     teamName: {
         type: String,
         required: true,
-        maxlength: 100
+        maxlength: 32
     },
     teamMembers: [{
         type: String
@@ -24,7 +24,7 @@ const teamSchema = new Schema({
     game: {
         type: String,
         required: true,
-        maxlength: 100
+        enum: ['League of Legends', 'Counter Strike: Global Offensive', 'Dota 2']
     },
 });
 

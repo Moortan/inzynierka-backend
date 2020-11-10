@@ -1,8 +1,4 @@
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const config = require('../config')(process.env.NODE_ENV);
-const salt = 10;
 
 const Schema = mongoose.Schema;
 
@@ -10,7 +6,7 @@ const userSchema = new Schema({
     username:{
         type: String,
         required: true,
-        maxlength: 100
+        maxlength: 32
     },
     email:{
         type: String,
@@ -19,7 +15,7 @@ const userSchema = new Schema({
         unique: 1
     },
     password:{
-        type:String,
+        type: String,
         required: true,
         minlength: 8
     },

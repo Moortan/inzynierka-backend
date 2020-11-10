@@ -1,7 +1,6 @@
 const Teams = require('../models/teamModel');
 const bodyParser = require('body-parser');
 const User = require('../models/userModel');
-const {auth} =require('../middlewares/auth.js');
 const cookieParser = require('cookie-parser');
 const userController = require('./userController')
 
