@@ -81,21 +81,26 @@ exports.signup = async (req, res, next) => {
         let newUser;
         const { email, username, password, role } = sanitize(req.body);
 
+        //validate username input
         if(!validate.isAlphaNumericOnly(username) && validate.isLongEnough(username)) {
             return res.status(400).json({message: "only alphanumeric username"})}
+
+        //validate email input
         if(!validate.isValidEmail(email)) {
             return res.status(400).json({message: "invalid email"}) }
-        if(!validate.isGoodPassword(password, username)) {
-            return res.status(400).json({message: "password must contain at least 12 characters, one lowercase, one uppercase and one digit and can not contain username"})}
+
+        //validate password strength input 
+        if(!validate.isGoodPassword(password, username, email)) {
+            return res.status(400).json({message: "password must contain at least 12 characters, one lowercase, one uppercase and one digit and can not contain username or email"})}
         
         User.findOne({ email: email.toString(10) }, async (err, user) => {
             if (user) return res.status(400).json({ auth: false, message: "email already exits" });
 
-            User.findOne({ username: username.toString(10) }, async (err, user) => {
+            User.findOne({ username: username.toString(10).toLowerCase() }, async (err, user) => {
                 if (user) return res.status(400).json({ auth: false, message: "username already exits" });
 
                 const hashedPassword = await hashPassword(password.toString(10));
-                newUser = new User({ email: email.toString(10), username: username.toString(10), password: hashedPassword, role: role || "basic" });
+                newUser = new User({ email: email.toString(10), username: username.toString(10).toLowerCase(), password: hashedPassword, role: role || "basic" });
 
                 await newUser.save();
                 res.json({
@@ -109,10 +114,10 @@ exports.signup = async (req, res, next) => {
 }
 
 exports.login = async (req, res, next) => {
-    try {
-
+    try { 
         const { email, password } = sanitize(req.body);
-        const user = await User.findOne({ $or: [{ email: email.toString(10) }, { username: email.toString(10) }] });
+
+        const user = await User.findOne({ $or: [{ email: email.toString(10).toLowerCase() }, { username: email.toString(10).toLowerCase() }] });
 
         if (!user || !await validatePassword(password.toString(10), user.password)) {
             res.status(401).send('Wrong email or password');

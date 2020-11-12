@@ -18,7 +18,7 @@ const cors = require('cors');
 rateLimiter(app);
 
 app.use(cors({ 
-    origin: 'http://localhost:3007',
+    origin: 'http://localhost:3003',
     credentials: true
 }))
 

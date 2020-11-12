@@ -1,6 +1,7 @@
 const Team = require('../models/teamModel')
 const validate = require('../middlewares/validator')
 var sanitize = require('mongo-sanitize');
+const { isAlphaNumericOnly } = require('../middlewares/validator');
 
 
 exports.getTeams = async (req, res, next) => {
@@ -78,11 +79,14 @@ exports.addTeam = async (req, res, next) => {
         newTeam.teamTag = newTeam.teamTag.toString(10)
         newTeam.game = newTeam.game.toString(10)
 
+        if(!newTeam.teamMembers.every(x => validate.isAlphaNumericOnly(x))) {
+            return res.status(400).json({message: "Each Team Member name can be alphanumeric only"})
+        }
         if(!validate.isAlphaNumericOnly(newTeam.teamName) || !validate.isLongEnough(newTeam.teamName)){
-            return res.status(400).json({message: "Team name must contain at least 6 characters and can be alphanumeric only"})
+            return res.status(400).json({message: "Team Name must contain at least 6 characters and can be alphanumeric only"})
         }
         if(!validate.isTeamTagValid(newTeam.teamTag)){
-            return res.status(400).json({message: "Team tag must be 2-5 characters and can be alphanumeric only"})
+            return res.status(400).json({message: "Team Tag must be 2-5 characters and can be alphanumeric only"})
         }
 
         await Team.findOne({ 'teamName': req.body.teamName.toString(10) }, async (err, team) => {
@@ -106,5 +110,4 @@ exports.addTeam = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-
 };
