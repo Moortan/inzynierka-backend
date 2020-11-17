@@ -2,9 +2,7 @@ const User = require('../models/userModel');
 const Team = require('../models/teamModel')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const config = require('../config')(process.env.NODE_ENV);
 const { roles } = require('../config/roles');
-const cookieParser = require('cookie-parser');
 const moment = require('moment');
 const randtoken = require('rand-token');
 const validate = require('../middlewares/validator')
@@ -82,7 +80,7 @@ exports.signup = async (req, res, next) => {
         const { email, username, password, role } = sanitize(req.body);
 
         //validate username input
-        if(!validate.isAlphaNumericOnly(username) && validate.isLongEnough(username)) {
+        if(!validate.isAlphaNumericOnly(username) || !validate.isLongEnough(username)) {
             return res.status(400).json({message: "only alphanumeric username"})}
 
         //validate email input
@@ -91,7 +89,7 @@ exports.signup = async (req, res, next) => {
 
         //validate password strength input 
         if(!validate.isGoodPassword(password, username, email)) {
-            return res.status(400).json({message: "password must contain at least 12 characters, one lowercase, one uppercase and one digit and can not contain username or email"})}
+            return res.status(400).json({message: "password must contain min. 8 and max. 64 chars., one lowercase, one uppercase and one digit and can not contain username or email"})}
         
         User.findOne({ email: email.toString(10) }, async (err, user) => {
             if (user) return res.status(400).json({ auth: false, message: "email already exits" });

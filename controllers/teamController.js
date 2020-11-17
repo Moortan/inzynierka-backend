@@ -1,8 +1,6 @@
 const Team = require('../models/teamModel')
 const validate = require('../middlewares/validator')
 var sanitize = require('mongo-sanitize');
-const { isAlphaNumericOnly } = require('../middlewares/validator');
-
 
 exports.getTeams = async (req, res, next) => {
     try {

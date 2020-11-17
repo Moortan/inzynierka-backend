@@ -4,18 +4,15 @@ const mongoose = require('mongoose');
 const db = require('./config')(process.env.NODE_ENV);
 require('dotenv').config();
 const setupController = require('./controllers/setupController');
-const apiController = require('./controllers/apiController');
 const rateLimiter = require('./middlewares/rateLimiter')
-const userController = require('./controllers/userController');
 const userRoutes = require('./routes/routeUser.js');
 const teamRoutes = require('./routes/routeTeam.js')
-const jwt = require('jsonwebtoken');
-const User = require('./models/userModel')
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
 rateLimiter(app);
+
 
 app.use(cors({ 
     origin: 'http://localhost:3003',

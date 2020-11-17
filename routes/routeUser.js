@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const rateLimiter = require('../middlewares/rateLimiter')
 const userController = require('../controllers/userController');
 const teamController = require('../controllers/teamController');
 
