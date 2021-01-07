@@ -15,7 +15,7 @@ rateLimiter(app);
 
 
 app.use(cors({ 
-    origin: 'http://localhost:3003',
+    origin: 'http://localhost:3000',
     credentials: true
 }))
 

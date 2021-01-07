@@ -7,7 +7,7 @@ const moment = require('moment');
 const randtoken = require('rand-token');
 const validate = require('../middlewares/validator')
 const ms = require('ms');
-var sanitize = require('mongo-sanitize');
+const sanitize = require('mongo-sanitize');
 const dev = process.env.NODE_ENV !== 'production';
 
 
@@ -16,7 +16,6 @@ const refreshTokens = {};
 
 // cookie options to create refresh token
 const COOKIE_OPTIONS = {
-    //domain: "localhost",
     httpOnly: true,
     secure: !dev,
     signed: true
@@ -89,7 +88,7 @@ exports.signup = async (req, res, next) => {
 
         //validate password strength input 
         if(!validate.isGoodPassword(password, username, email)) {
-            return res.status(400).json({message: "password must contain min. 8 and max. 64 chars., one lowercase, one uppercase and one digit and can not contain username or email"})}
+            return res.status(400).json({message: "8 to 64 character password requiring at least 3 out 4 (uppercase and lowercase letters, numbers and special characters) and no more than 2 equal characters in a row"})}
         
         User.findOne({ email: email.toString(10) }, async (err, user) => {
             if (user) return res.status(400).json({ auth: false, message: "email already exits" });
@@ -114,8 +113,8 @@ exports.signup = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try { 
         const { email, password } = sanitize(req.body);
-
-        const user = await User.findOne({ $or: [{ email: email.toString(10).toLowerCase() }, { username: email.toString(10).toLowerCase() }] });
+        const user = await User.findOne({ $or: [{ email: email.toString(10).toLowerCase() },
+                                        { username: email.toString(10).toLowerCase() }] });
 
         if (!user || !await validatePassword(password.toString(10), user.password)) {
             res.status(401).send('Wrong email or password');
@@ -192,7 +191,7 @@ exports.verifyTokens = async (req, res, next) => {
     
 
     if (!refreshToken) {
-        return await exports.handleResponse(req, res, 204);
+        return await exports.handleResponse(req, res, 401);
     }
 
     //verify xsrf token
